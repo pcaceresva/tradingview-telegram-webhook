@@ -5,40 +5,47 @@ import json
 
 app = Flask(__name__)
 
-# Token desde Render
+# Usar el token de Telegram desde variable de entorno en Render
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 @app.route("/", methods=["POST"])
 def webhook():
     try:
-        # 🔹 Parsear el JSON que manda TradingView
-        data = request.get_json(force=True)
+        # Recibir el JSON enviado por TradingView
+        data = request.get_data(as_text=True).strip()
+        print(f"[TradingView] Mensaje recibido crudo: {data}")
 
-        if not data or "message" not in data or "chat_id" not in data:
-            return "Bad request", 400
+        # Intentar parsear JSON
+        try:
+            payload = json.loads(data)
+        except json.JSONDecodeError:
+            return "Invalid JSON", 400
 
-        message_text = data["message"]
-        chat_id = data["chat_id"]
+        # Validar que tenga los campos correctos
+        if "message" not in payload or "chat_id" not in payload:
+            return "Missing fields", 400
 
-        # 🔹 Enviar a Telegram
-        payload = {
+        chat_id = payload["chat_id"]
+        message = payload["message"]
+
+        # Preparar payload para Telegram
+        tg_payload = {
             "chat_id": chat_id,
-            "text": message_text,
+            "text": message,
             "parse_mode": "Markdown"
         }
 
+        # Enviar mensaje a Telegram
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-        resp = requests.post(url, json=payload)
+        resp = requests.post(url, json=tg_payload)
 
-        # Logs
-        print(f"[TradingView] JSON recibido: {data}")
         print(f"[Telegram] Respuesta: {resp.status_code} - {resp.text}")
+
+        return "ok", 200
 
     except Exception as e:
         print(f"[Error] {e}")
-        return "Internal server error", 500
-
-    return "ok"
+        return "error", 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
