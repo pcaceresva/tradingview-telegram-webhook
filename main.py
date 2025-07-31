@@ -1,56 +1,53 @@
 from flask import Flask, request
 import requests
 import os
-import json
 
 app = Flask(__name__)
 
-# 🔹 Usar variables de entorno de Render
+# Token de Telegram
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID_ENV = os.getenv("TELEGRAM_CHAT_ID")
+
+# Mapeo de indicadores → canales
+INDICATOR_CHAT_IDS = {
+    "MACD40": os.getenv("TELEGRAM_CHAT_ID_MACD"),
+    "EMA+MACD40": os.getenv("TELEGRAM_CHAT_ID_CRUCEEMA"),
+    "SUPERTREND40": os.getenv("TELEGRAM_CHAT_ID_SUPERTREND")
+}
 
 @app.route("/", methods=["POST"])
 def webhook():
     try:
-        # 1️⃣ Recibir mensaje crudo enviado por TradingView
+        # Recibir mensaje de TradingView
         raw_data = request.data.decode("utf-8").strip()
-        print("===== [TradingView] Datos crudos recibidos =====")
-        print(raw_data)
+        print(f"[TradingView] Mensaje recibido: {raw_data}")
 
-        # 2️⃣ Intentar parsear como JSON (por si TradingView envía JSON)
-        message_text = None
-        chat_id = CHAT_ID_ENV
+        # Esperamos formato: INDICADOR|Mensaje
+        if "|" in raw_data:
+            indicator_code, message_text = raw_data.split("|", 1)
+            chat_id = INDICATOR_CHAT_IDS.get(indicator_code)
+        else:
+            print("[Error] Formato no válido. Falta el identificador del indicador.")
+            return "Formato inválido", 400
 
-        try:
-            data_json = json.loads(raw_data)
-            message_text = data_json.get("message", "")
-            if "chat_id" in data_json:
-                chat_id = data_json.get("chat_id")
-        except json.JSONDecodeError:
-            # Si no es JSON, asumir que es texto plano
-            message_text = raw_data
+        # Verificar que el chat_id exista
+        if not chat_id:
+            print(f"[Error] No se encontró chat_id para el indicador {indicator_code}")
+            return "No chat_id", 400
 
-        # 3️⃣ Mostrar token y chat_id usados
-        print("TOKEN usado:", TOKEN)
-        print("CHAT_ID usado:", chat_id)
-
-        # 4️⃣ Construir payload para Telegram
+        # Construir payload para Telegram
         payload = {
             "chat_id": chat_id,
             "text": message_text,
             "parse_mode": "Markdown"
         }
 
-        # 5️⃣ Enviar a Telegram
+        # Enviar a Telegram
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         resp = requests.post(url, json=payload)
-
-        # 6️⃣ Mostrar respuesta de Telegram
-        print("===== [Telegram] Respuesta =====")
-        print(resp.status_code, resp.text)
+        print(f"[Telegram] Respuesta: {resp.status_code} - {resp.text}")
 
     except Exception as e:
-        print("[Error]", e)
+        print(f"[Error] {e}")
 
     return "ok"
 
