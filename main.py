@@ -10,37 +10,40 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 @app.route("/", methods=["POST"])
 def webhook():
     try:
-        # 🔹 Capturar datos crudos
-        raw_data = request.data.decode("utf-8")
+        # Leer datos crudos que envía TradingView
+        raw_data = request.data.decode("utf-8").strip()
         print(f"[Render] Datos crudos recibidos: {raw_data}")
 
-        # 🔹 Intentar parsear como JSON
+        # Intentar parsear como JSON
         try:
-            data = json.loads(raw_data)
-            message_text = data.get("message", "")
-            chat_id = data.get("chat_id", "")
+            data_json = json.loads(raw_data)
+            message_text = data_json.get("message", raw_data)
+            chat_id = data_json.get("chat_id", None)
             print("[Render] Interpretado como JSON correctamente")
         except json.JSONDecodeError:
+            # No es JSON → usar texto plano y chat fijo
             message_text = raw_data
-            chat_id = ""
+            chat_id = os.getenv("TELEGRAM_CHAT_ID")
             print("[Render] Interpretado como TEXTO plano")
 
-        # 🔹 Usar chat_id del JSON o el de variable de entorno
+        # Verificar que tengamos chat_id
         if not chat_id:
-            chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+            print("[Error] No se recibió chat_id ni está configurado en variable de entorno")
+            return "missing chat_id", 400
 
-        # 🔹 Enviar a Telegram
+        # Enviar mensaje a Telegram
         payload = {
             "chat_id": chat_id,
-            "text": message_text
+            "text": message_text,
+            "parse_mode": "Markdown"
         }
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         resp = requests.post(url, json=payload)
-
         print(f"[Telegram] Status: {resp.status_code} - {resp.text}")
 
     except Exception as e:
         print(f"[Error] {e}")
+        return "error", 500
 
     return "ok"
 
