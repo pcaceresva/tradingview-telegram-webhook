@@ -14,7 +14,7 @@ CHAT_IDS = {
     "EMA+MACD40-1": "-1002411599382",   # Canal para indicador EMA+MACD
     "EMA+MACD40-2": "-1002411599382",   # Canal para indicador EMA+MACD
     "SUPERTRENDRSI40-1": "-1002813953373",  # Canal para indicador Supertrend-RSI
-    "SUPERTRENDRSI40-1": "-1002813953373"  # Canal para indicador Supertrend-RSI
+    "SUPERTRENDRSI40-2": "-1002813953373"  # Canal para indicador Supertrend-RSI
 }
 
 @app.route("/", methods=["POST"])
