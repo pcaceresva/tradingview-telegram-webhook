@@ -5,38 +5,36 @@ import json
 
 app = Flask(__name__)
 
-# 🔹 Token fijo desde variables de entorno
-TOKEN = os.getenv("TELEGRAM_TOKEN")
+TOKEN = os.getenv("TELEGRAM_TOKEN")  # Token del bot
+# Eliminamos CHAT_ID fijo para permitir IDs dinámicos desde TV
 
 @app.route("/", methods=["POST"])
 def webhook():
     try:
         raw_data = request.data.decode("utf-8").strip()
-        print(f"[Render] Datos crudos recibidos: {raw_data}")
+        print(f"\n[Render] Datos crudos recibidos: {raw_data}")
 
-        chat_id = None
-        message_text = None
-
-        # 📌 Intentar parsear como JSON (TradingView enviando JSON)
+        # Intentar parsear como JSON
         try:
-            data_json = json.loads(raw_data)
-            message_text = data_json.get("message")
-            chat_id = data_json.get("chat_id")
-            print("[Render] Interpretado como JSON")
-        except Exception:
-            # 📌 Si falla, interpretamos como texto plano
-            message_text = raw_data
-            print("[Render] Interpretado como TEXTO PLANO")
+            data = json.loads(raw_data)
+            print("[Render] Interpretado como JSON correctamente")
+            message_text = data.get("message", "")
+            chat_id = data.get("chat_id", "")
 
-        # 🔹 Validaciones
-        if not message_text:
-            print("[Error] No se encontró mensaje para enviar a Telegram.")
-            return "error", 400
+        except json.JSONDecodeError:
+            print("[Render] Interpretado como TEXTO PLANO")
+            message_text = raw_data
+            chat_id = os.getenv("TELEGRAM_CHAT_ID")  # Si no envían chat_id, usa el fijo
+
+        # Validar datos
         if not chat_id:
             print("[Error] No se encontró chat_id en la alerta.")
-            return "error", 400
+            return "missing chat_id", 400
+        if not message_text:
+            print("[Error] No se encontró message en la alerta.")
+            return "missing message", 400
 
-        # 🔹 Enviar a Telegram
+        # Enviar a Telegram
         payload = {
             "chat_id": chat_id,
             "text": message_text,
@@ -45,13 +43,14 @@ def webhook():
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         resp = requests.post(url, json=payload)
 
+        # Mostrar respuesta exacta de Telegram
         print(f"[Telegram] Status: {resp.status_code} - {resp.text}")
+
         return "ok", 200
 
     except Exception as e:
-        print(f"[Error General] {e}")
+        print(f"[Error] {e}")
         return "error", 500
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
