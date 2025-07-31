@@ -1,46 +1,58 @@
 from flask import Flask, request
 import requests
 import os
+import json
 
 app = Flask(__name__)
 
-# 🔹 Usa el token de Telegram desde variables de entorno en Render
+# 🔹 Usar variables de entorno de Render
 TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID_ENV = os.getenv("TELEGRAM_CHAT_ID")
 
 @app.route("/", methods=["POST"])
 def webhook():
     try:
-        # 1️⃣ Recibir texto enviado por TradingView
-        message_text = request.data.decode("utf-8").strip()
+        # 1️⃣ Recibir mensaje crudo enviado por TradingView
+        raw_data = request.data.decode("utf-8").strip()
+        print("===== [TradingView] Datos crudos recibidos =====")
+        print(raw_data)
 
-        # 2️⃣ Extraer chat_id del mensaje si viene incluido (opcional)
-        chat_id = os.getenv("TELEGRAM_CHAT_ID")  # Valor por defecto
-        if message_text.startswith("chat_id="):
-            first_line, rest = message_text.split("\n", 1)
-            chat_id = first_line.replace("chat_id=", "").strip()
-            message_text = rest.strip()
+        # 2️⃣ Intentar parsear como JSON (por si TradingView envía JSON)
+        message_text = None
+        chat_id = CHAT_ID_ENV
 
-        # 3️⃣ Construir payload para Telegram
+        try:
+            data_json = json.loads(raw_data)
+            message_text = data_json.get("message", "")
+            if "chat_id" in data_json:
+                chat_id = data_json.get("chat_id")
+        except json.JSONDecodeError:
+            # Si no es JSON, asumir que es texto plano
+            message_text = raw_data
+
+        # 3️⃣ Mostrar token y chat_id usados
+        print("TOKEN usado:", TOKEN)
+        print("CHAT_ID usado:", chat_id)
+
+        # 4️⃣ Construir payload para Telegram
         payload = {
             "chat_id": chat_id,
             "text": message_text,
-            "parse_mode": "Markdown"  # o "HTML" si prefieres
+            "parse_mode": "Markdown"
         }
 
-        # 4️⃣ Enviar a Telegram
+        # 5️⃣ Enviar a Telegram
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         resp = requests.post(url, json=payload)
 
-        # 5️⃣ Logs
-        print(f"[TradingView] Mensaje recibido: {message_text}")
-        print(f"[Telegram] Respuesta: {resp.status_code} - {resp.text}")
-
-        return "ok", 200
+        # 6️⃣ Mostrar respuesta de Telegram
+        print("===== [Telegram] Respuesta =====")
+        print(resp.status_code, resp.text)
 
     except Exception as e:
-        print(f"[Error] {e}")
-        return "error", 500
+        print("[Error]", e)
 
+    return "ok"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
