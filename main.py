@@ -12,7 +12,7 @@ CHAT_IDS = {
     "MACD40-1": "-1002579121705",   # Canal para indicador MACD
     "MACD40-2": "-1002579121705",   # Canal para indicador MACD4
     "CRUCEEMA40-1": "-1002411599382",   # Canal para indicador EMA+MACD
-    "CRUCEEMA40-22": "-1002411599382",   # Canal para indicador EMA+MACD
+    "CRUCEEMA40-2": "-1002411599382",   # Canal para indicador EMA+MACD
     "SUPERTRENDRSI40-1": "-1002813953373",  # Canal para indicador Supertrend-RSI
     "SUPERTRENDRSI40-2": "-1002813953373"  # Canal para indicador Supertrend-RSI
 }
