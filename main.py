@@ -15,7 +15,8 @@ CHAT_IDS = {
     "CRUCEEMA40-2": "-1002411599382",   # Canal para indicador EMA+MACD
     "SUPERTRENDRSI40-1": "-1002813953373",  # Canal para indicador Supertrend-RSI
     "SUPERTRENDRSI40-2": "-1002813953373",  # Canal para indicador Supertrend-RSI
-    "SUPERTRENDRSI40-3": "-1002813953373"  # Canal para indicador Supertrend-RSI
+    "SUPERTRENDRSI40-3": "-1002813953373",  # Canal para indicador Supertrend-RSI
+    "TREANDBREAKS": "-1002956776649"  # Canal para indicador TreandBreaks
 }
 
 @app.route("/", methods=["POST"])
@@ -58,4 +59,5 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
