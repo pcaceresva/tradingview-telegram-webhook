@@ -17,9 +17,9 @@ CHAT_IDS = {
     "SUPERTRENDRSI40-2": "-1002813953373",  # Canal para indicador Supertrend-RSI
     "SUPERTRENDRSI40-3": "-1002813953373",  # Canal para indicador Supertrend-RSI
     "TRENDBREAKS": "-1002956776649",  # Canal para indicador TreandBreaks
-    "BB+RSI-1": "-1002813953373", # Canal para indicador BB+RSI
-    "BB+RSI-2": "-1002813953373", # Canal para indicador BB+RSI
-    "BB+RSI-3": "-1002813953373" # Canal para indicador BB+RSI
+    "BB+RSI-1": "-1003613150409", # Canal para indicador BB+RSI
+    "BB+RSI-2": "-1003613150409", # Canal para indicador BB+RSI
+    "BB+RSI-3": "-1003613150409" # Canal para indicador BB+RSI
 }
 
 @app.route("/", methods=["POST"])
@@ -62,6 +62,7 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
