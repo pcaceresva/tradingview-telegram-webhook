@@ -13,6 +13,7 @@ CHAT_IDS = {
     "MACD40-2": "-1002579121705",   # Canal para indicador MACD4
     "CRUCEEMA40-1": "-1002411599382",   # Canal para indicador EMA+MACD
     "CRUCEEMA40-2": "-1002411599382",   # Canal para indicador EMA+MACD
+    "CRUCEEMA40-3": "-1002411599382",   # Canal para indicador EMA+MACD
     "SUPERTREND": "-1002813953373",  # Canal para indicador Supertrend-RSI
     "SUPERTRENDRSI40-1": "-1002813953373",  # Canal para indicador Supertrend-RSI
     "SUPERTRENDRSI40-2": "-1002813953373",  # Canal para indicador Supertrend-RSI
@@ -63,6 +64,7 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
