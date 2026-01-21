@@ -69,7 +69,7 @@ def webhook():
         print(f"[TradingView] {raw_message}")
 
         # Responder inmediato a TradingView
-        Thread(target=send_to_telegram, args=(raw_message,)).start()
+        send_to_telegram(raw_message)
         return "ok", 200
 
     except Exception as e:
@@ -80,3 +80,4 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
