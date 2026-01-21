@@ -23,6 +23,8 @@ CHAT_IDS = {
     "BB+RSI-2": "-1003613150409", # Canal para indicador BB+RSI
     "BB+RSI-3": "-1003613150409" # Canal para indicador BB+RSI
 }
+SUPERTRENDEMA_CHAT_ID = "-1002813953373"
+
 
 @app.route("/", methods=["POST"])
 def webhook():
@@ -33,16 +35,21 @@ def webhook():
         print(f"[TradingView] Mensaje crudo: {raw_message}")
 
         # Buscar a qué canal enviar según palabra clave
-        target_chat_id = None
-        for key, chat_id in CHAT_IDS.items():
-            if key in raw_message:
+        # 1️⃣ Prioridad absoluta: SUPERTRENDEMA
+        if "SUPERTRENDEMA" in raw_message:
+            target_chat_id = SUPERTRENDEMA_CHAT_ID
+        else:
+            target_chat_id = None
+            for key, chat_id in CHAT_IDS.items():
+                if key in raw_message:
                 target_chat_id = chat_id
                 break
 
-        # Si no encuentra canal, loguea y no envía
+        # 2️⃣ Fallback de seguridad
         if not target_chat_id:
-            print("[Error] No se encontró un canal para este mensaje.")
-            return "no channel", 400
+            print("[WARN] Mensaje sin canal asignado, se descarta:")
+            print(raw_message)
+            return "ok", 200
 
         # Enviar mensaje a Telegram
         payload = {
@@ -64,6 +71,7 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
