@@ -26,7 +26,7 @@ CHAT_IDS = {
 }
 
 # 🔹 Canal fijo para SUPERTRENDEMA (prioridad absoluta)
-SUPERTRENDEMA_CHAT_ID = "-1002813953373"
+SUPERTRENDEMA_CHAT_ID = "-1003477468700"
 
 
 def send_to_telegram(raw_message: str):
@@ -81,6 +81,7 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
